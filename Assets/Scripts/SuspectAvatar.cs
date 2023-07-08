@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SuspectAvatar : MonoBehaviour
+public class SuspectAvatar : MonoBehaviour, Interactable
 {
     public Suspect suspect;
 
@@ -23,6 +23,20 @@ public class SuspectAvatar : MonoBehaviour
 
     public GameObject[] hats;
     public Transform hatSpawnPoint;
+
+    DialogueBox dialogueBox;
+    Player player;
+    PlayerLook playerLook;
+    PlayerInteract playerInteract;
+
+    public GameManager gameManager;
+
+    void Start() {
+        dialogueBox = FindObjectOfType<DialogueBox>();
+        player = FindObjectOfType<Player>();
+        playerLook = FindObjectOfType<PlayerLook>();
+        playerInteract = FindObjectOfType<PlayerInteract>();
+    }
 
     public void SetUpAppearance() {
         if (suspect.gender == Suspect.Gender.Female) {
@@ -45,6 +59,24 @@ public class SuspectAvatar : MonoBehaviour
 
         if (Random.Range(0, 3) != 0) {
             Instantiate(hats[Random.Range(0, hats.Length)], hatSpawnPoint);
+        }
+    }
+
+    public IEnumerator Interact() {
+        player.control = false;
+        playerLook.control = false;
+        playerInteract.control = false;
+
+        yield return dialogueBox.Display(gameManager.GetTestimony(suspect));
+
+        player.control = true;
+        playerLook.control = true;
+        playerInteract.control = true;
+    }   
+
+    public string InteractCommand {
+        get {
+            return "Talk to <b>" + suspect.name;
         }
     }
 }

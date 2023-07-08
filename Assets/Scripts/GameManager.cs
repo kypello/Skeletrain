@@ -22,7 +22,16 @@ public class GameManager : MonoBehaviour
             for (int j = 0; j < mystery.carriages[i].passengers.Count; j++) {
                 SuspectAvatar newSuspect = Instantiate(suspectPrefab, carriageRends[i].transform.GetChild(j).position, Quaternion.Euler(Vector3.up * -90f));
                 newSuspect.suspect = mystery.carriages[i].passengers[j];
+                newSuspect.gameManager = this;
                 newSuspect.SetUpAppearance();
+            }
+        }
+
+        foreach (Suspect suspect in mystery.suspects) {
+            string[] testimony = mystery.trueTimeline.GenerateTestimony(suspect);
+            Debug.Log(suspect.name + "'s testimony:");
+            foreach (string statement in testimony) {
+                Debug.Log(statement);
             }
         }
 
@@ -33,5 +42,9 @@ public class GameManager : MonoBehaviour
             newSuspect.SetUpAppearance();
         }
         */
+    }
+
+    public string[] GetTestimony(Suspect suspect) {
+        return mystery.trueTimeline.GenerateTestimony(suspect);
     }
 }
