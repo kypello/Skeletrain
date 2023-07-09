@@ -391,7 +391,12 @@ public class Mystery
                         suspect.itemResponses[item] = unknownItemResponses[Random.Range(0, unknownItemResponses.Length)];
                     }
                     else {
-                        suspect.itemResponses[item] = ownItemResponses[Random.Range(0, ownItemResponses.Length)].Replace("[item]", item.name);
+                        if (item.name == "bone") {
+                            suspect.itemResponses[item] = "That's my spare bone.";
+                        }
+                        else {
+                            suspect.itemResponses[item] = ownItemResponses[Random.Range(0, ownItemResponses.Length)].Replace("[item]", item.name);
+                        }
                     }
                 }
                 else if (suspect.knownItems.Contains(item)) {

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class PlayerLook : MonoBehaviour
 {
@@ -14,8 +15,20 @@ public class PlayerLook : MonoBehaviour
     bool lookingAtPoint = false;
     bool mouseMovedSinceUnlocking;
 
+    public TMP_Text sensitivityText;
+
+    float textTimer = -1f;
+
     void Update()
     {
+        if (textTimer > 0f) {
+            textTimer -= Time.deltaTime;
+            sensitivityText.enabled = true;
+            sensitivityText.text = "Sensitivity: " + Mathf.FloorToInt(sensitivity);
+        }
+        else {
+            sensitivityText.enabled = false;
+        }
         if (control) {
             Cursor.lockState = CursorLockMode.Locked;
 
@@ -31,6 +44,15 @@ public class PlayerLook : MonoBehaviour
                     mouseMovedSinceUnlocking = true;
                 }
             }
+
+            if (Input.GetKeyDown(KeyCode.UpArrow)) {
+                sensitivity = Mathf.Min(sensitivity + 25f, 2000f);
+                textTimer = 2f;
+            }
+            if (Input.GetKeyDown(KeyCode.DownArrow)) {
+                sensitivity = Mathf.Max(sensitivity - 25f, 25f);
+                textTimer = 2f;
+            }
         }
         else {
             mouseMovedSinceUnlocking = false;
@@ -44,7 +66,7 @@ public class PlayerLook : MonoBehaviour
 
         lookingAtPoint = true;
 
-        Vector3 targetDir = (point - transform.position).normalized;
+        Quaternion targetRotation = Quaternion.LookRotation(point - transform.position);
 
         float dotProduct;
 
@@ -53,8 +75,11 @@ public class PlayerLook : MonoBehaviour
                 break;
             }
 
-            dotProduct = Vector3.Dot(transform.forward, targetDir);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360f * Time.deltaTime);
 
+            
+
+            /*
             Vector3 delta = Vector3.RotateTowards(transform.forward, targetDir, (dotProduct * -dotProduct + 1f) * 2f * Mathf.PI * Time.deltaTime, 0f);
 
             transform.localRotation = Quaternion.LookRotation(delta);
@@ -64,9 +89,10 @@ public class PlayerLook : MonoBehaviour
             player.localRotation = Quaternion.Euler(Vector3.up * player.localEulerAngles.y);
 
             xRotation = Mathf.Repeat(transform.localEulerAngles.x + 90f, 180f) - 90f;
+            */
 
             yield return null;
-        } while (dotProduct < 0.99f);
+        } while (Quaternion.Angle(transform.rotation, targetRotation) > 1f);
 
         lookingAtPoint = false;
     }

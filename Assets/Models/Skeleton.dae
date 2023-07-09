@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 3.5.1 commit date:2023-04-25, commit time:13:50, hash:6ee8aa4997ee</authoring_tool>
     </contributor>
-    <created>2023-07-08T19:03:42</created>
-    <modified>2023-07-08T19:03:42</modified>
+    <created>2023-07-09T15:22:53</created>
+    <modified>2023-07-09T15:22:53</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -517,7 +517,7 @@
           </technique_common>
         </source>
         <source id="Cube_003-mesh-map-0">
-          <float_array id="Cube_003-mesh-map-0-array" count="72">1 1 1.99787e-4 0 1 0 1 1 0 0 1 0 1.99787e-4 1.99765e-4 1 1 1.99765e-4 1 0 1.99765e-4 0.9999999 1 0 1 0.9998002 1 0 1.99798e-4 0.9998002 1.99755e-4 1.99776e-4 0 1 0.9998002 1.99755e-4 0.9998002 1 1 1.99765e-4 1 1.99787e-4 0 1 1 0 1 0 0 1.99787e-4 1.99765e-4 1 1.99798e-4 1 1 0 1.99765e-4 1 1.9982e-4 0.9999999 1 0.9998002 1 0 1 0 1.99798e-4 1.99776e-4 0 1 0 1 0.9998002</float_array>
+          <float_array id="Cube_003-mesh-map-0-array" count="72">1 1 1.99795e-4 0 1 0 1 1 0 0 1 0 1.99795e-4 1 1 1.99795e-4 1.99765e-4 1.99854e-4 0 1 0.9999999 1.99795e-4 0 1.99795e-4 0.9998002 1 0 1.99798e-4 0.9998002 1.99755e-4 1.99776e-4 0 1 0.9998002 1.99755e-4 0.9998002 1 1 1.99765e-4 1 1.99795e-4 0 1 1 0 1 0 0 1.99795e-4 1 1 1 1 1.99795e-4 0 1 1 1 0.9999999 1.99795e-4 0.9998002 1 0 1 0 1.99798e-4 1.99776e-4 0 1 0 1 0.9998002</float_array>
           <technique_common>
             <accessor source="#Cube_003-mesh-map-0-array" count="36" stride="2">
               <param name="S" type="float"/>

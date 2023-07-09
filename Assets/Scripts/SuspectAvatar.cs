@@ -30,6 +30,8 @@ public class SuspectAvatar : MonoBehaviour, Interactable
     PlayerLook playerLook;
     PlayerInteract playerInteract;
 
+    public Transform head;
+
     public GameManager gameManager;
 
     void Start() {
@@ -40,7 +42,7 @@ public class SuspectAvatar : MonoBehaviour, Interactable
         playerInteract = FindObjectOfType<PlayerInteract>();
     }
 
-    public void SetUpAppearance() {
+    public void SetUpAppearance(bool hat) {
         if (suspect.gender == Suspect.Gender.Female) {
             dress.enabled = true;
             leftLeg.enabled = false;
@@ -59,7 +61,7 @@ public class SuspectAvatar : MonoBehaviour, Interactable
 
         skull.sharedMaterial = skullMaterials[Random.Range(0, skullMaterials.Length)];
 
-        if (Random.Range(0, 3) != 0) {
+        if (hat && Random.Range(0, 3) != 0) {
             Instantiate(hats[Random.Range(0, hats.Length)], hatSpawnPoint);
         }
     }
@@ -68,6 +70,8 @@ public class SuspectAvatar : MonoBehaviour, Interactable
         player.control = false;
         playerLook.control = false;
         playerInteract.control = false;
+
+        yield return playerLook.LookAt(head.position);
 
         List<string> dialogueChoices = new List<string>();
         dialogueChoices.Add("- Tell me everything you remember.");

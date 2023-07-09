@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    Mystery mystery;
+    public Mystery mystery;
     public Material[] carriageColors;
     public MeshRenderer[] carriageRends;
     public Transform[] carriageTransforms;
     public SuspectAvatar suspectPrefab;
     public WorldItem worldItemPrefab;
+
+    public Transform livingPerson;
+    public ConductorIntro conductorIntro;
+    public Transform player;
 
     [System.Serializable]
     public struct ItemTemplate {
@@ -29,6 +33,19 @@ public class GameManager : MonoBehaviour
 
         SpawnItems();
 
+        Transform spawnPoint = carriageTransforms[mystery.necroCarriage.index].GetChild(Random.Range(0, carriageTransforms[mystery.necroCarriage.index].childCount));
+        
+        player.position = carriageTransforms[mystery.necroCarriage.index].position + Vector3.up * 2f;
+        player.rotation = Quaternion.LookRotation(spawnPoint.position - carriageTransforms[mystery.necroCarriage.index].position);
+
+        livingPerson.position = spawnPoint.position;
+        livingPerson.rotation = Quaternion.LookRotation(carriageTransforms[mystery.necroCarriage.index].position - spawnPoint.position);
+
+        
+        
+        StartCoroutine(conductorIntro.Intro());
+
+
         foreach (Suspect suspect in mystery.suspects) {
             string[] testimony = mystery.trueTimeline.GenerateTestimony(suspect);
             //Debug.Log(suspect.name + "'s testimony:");
@@ -47,14 +64,23 @@ public class GameManager : MonoBehaviour
     }
 
     void SpawnSuspects() {
+        List<Transform> usedSpawnPoints = new List<Transform>();
+
         for (int i = 0; i < mystery.carriageCount; i++) {
-            carriageRends[i].sharedMaterial = carriageColors[(int)mystery.carriages[i].color];
+            carriageRends[i*2].sharedMaterial = carriageColors[(int)mystery.carriages[i].color];
+            carriageRends[i*2+1].sharedMaterial = carriageColors[(int)mystery.carriages[i].color];
 
             for (int j = 0; j < mystery.carriages[i].passengers.Count; j++) {
-                SuspectAvatar newSuspect = Instantiate(suspectPrefab, carriageRends[i].transform.GetChild(j).position, Quaternion.Euler(Vector3.up * -90f));
+                Transform spawnPoint;
+                do {
+                    spawnPoint = carriageTransforms[i].GetChild(Random.Range(0, carriageTransforms[i].childCount));
+                } while (usedSpawnPoints.Contains(spawnPoint));
+
+                SuspectAvatar newSuspect = Instantiate(suspectPrefab, spawnPoint.position + new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)), Quaternion.Euler(spawnPoint.localEulerAngles + Vector3.up * Random.Range(-15f, 15f)));
+                usedSpawnPoints.Add(spawnPoint);
                 newSuspect.suspect = mystery.carriages[i].passengers[j];
                 newSuspect.gameManager = this;
-                newSuspect.SetUpAppearance();
+                newSuspect.SetUpAppearance(true);
             }
         }
     }

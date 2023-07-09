@@ -31,15 +31,15 @@ public class Timeline
         moves = new List<Move>();
     }
 
-    enum Pronoun{Subject = 0, Object = 1, Possessive = 2}
-    string[,] pronouns = new string[,]{{"she", "her", "her"}, {"he", "him", "his"}};
+    public enum Pronoun{Subject = 0, Object = 1, Possessive = 2}
+    public static string[,] pronouns = new string[,]{{"she", "her", "her"}, {"he", "him", "his"}};
 
     string[] selfMoveTemplates = new string[]{
-        "I felt the need to stretch my legs, so I went to the [dest_color] carriage.", 
-        "I decided to go for a wander and went to the [dest_color] carriage.",
-        "I got tired of sitting, so I got up and went over to the [dest_color] carriage.",
-        "My legs were starting to fall asleep, so I stood up and walked over to the [dest_color] carriage.",
-        "I decided to check out the [dest_color] carriage, so I got up and left."
+        "I felt the need to stretch my legs, so I went to Carriage [dest_letter].", 
+        "I decided to go for a wander and went to Carriage [dest_letter].",
+        "I got tired of sitting, so I got up and went over to Carriage [dest_letter].",
+        "my legs were starting to fall asleep, so I stood up and walked over to Carriage [dest_letter].",
+        "I decided to check out Carriage [dest_letter], so I got up and left."
     };
 
     string[] selfMoveTalkTemplates = new string[]{
@@ -60,15 +60,15 @@ public class Timeline
     };
 
     string[] selfMoveVictimDeadTemplates = new string[]{
-        "Passing through the [necro_color] carriage, I noticed the victim was still very much undead, before contuing to the [dest_color] carriage.",
-        "I went through the [necro_color] carriage and saw the victim looking as skeletal as ever, then continued to the [dest_color] carriage.",
-        "The victim was still undead at this point, as I noticed when I was passing through the [necro_color] carriage while on my way to the [dest_color] carriage."
+        "Passing through Carriage [necro_letter], I noticed the victim was still very much undead, before contuing to Carriage [dest_letter].",
+        "I went through Carriage [necro_letter] and saw the victim looking as skeletal as ever, then continued to Carriage [dest_letter].",
+        "The victim was still undead at this point, as I noticed when I was passing through Carriage [necro_letter] while on my way to Carriage [dest_letter]."
     };
 
     string[] selfMoveVictimAliveTemplates = new string[]{
-        "To my horror, I saw the victim alive and well in the [necro_color] carriage. Nevertheless I continued onwards to the [dest_color] carriage.",
-        "It was at this moment while passing through the [necro_color] carriage that I saw the victim full of life. Ignoring the frightening sight, I continued to the [dest_color] carriage.",
-        "The victim had already been resurrected at this point, as I noted while passing through the [necro_color] carriage before continuing to the [dest_color] carriage."
+        "To my horror, I saw the victim alive and well in Carriage [necro_letter]. Nevertheless I continued onwards to Carriage [dest_letter].",
+        "It was at this moment while passing through Carriage [necro_letter] that I saw the victim full of life. Ignoring the frightening sight, I continued to Carriage [dest_letter].",
+        "The victim had already been resurrected at this point, as I noted while passing through Carriage [necro_letter] before continuing to Carriage [dest_letter]."
     };
 
     string[] otherLeaveTemplates = new string[]{
@@ -145,14 +145,14 @@ public class Timeline
             }
 
             if (move.movingSuspect == witness) {
-                statements.Add(startingWord + selfMoveTemplates[Random.Range(0, selfMoveTemplates.Length)].Replace("[dest_color]", Carriage.ColorAsString(move.destinationCarriage.color)));
+                statements.Add(startingWord + selfMoveTemplates[Random.Range(0, selfMoveTemplates.Length)].Replace("[dest_letter]", move.destinationCarriage.CarriageLetter()));
 
                 if ((witness.carriage.index < mystery.necroCarriage.index) != (move.destinationCarriage.index < mystery.necroCarriage.index)) {
                     if (move.necroCommited) {
-                        statements.Add(selfMoveVictimAliveTemplates[Random.Range(0, selfMoveVictimAliveTemplates.Length)].Replace("[necro_color]", Carriage.ColorAsString(mystery.necroCarriage.color)).Replace("[dest_color]", Carriage.ColorAsString(move.destinationCarriage.color)));
+                        statements.Add(selfMoveVictimAliveTemplates[Random.Range(0, selfMoveVictimAliveTemplates.Length)].Replace("[necro_letter]", mystery.necroCarriage.CarriageLetter()).Replace("[dest_letter]", move.destinationCarriage.CarriageLetter()));
                     }
                     else {
-                        statements.Add(selfMoveVictimDeadTemplates[Random.Range(0, selfMoveVictimDeadTemplates.Length)].Replace("[necro_color]", Carriage.ColorAsString(mystery.necroCarriage.color)).Replace("[dest_color]", Carriage.ColorAsString(move.destinationCarriage.color)));
+                        statements.Add(selfMoveVictimDeadTemplates[Random.Range(0, selfMoveVictimDeadTemplates.Length)].Replace("[necro_letter]", mystery.necroCarriage.CarriageLetter()).Replace("[dest_letter]", move.destinationCarriage.CarriageLetter()));
                     }
                 }
 

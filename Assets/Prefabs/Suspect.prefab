@@ -91,6 +91,7 @@ MonoBehaviour:
   - {fileID: 7341670352766333002, guid: 674f95b82728cdd58af0206ad64c7ea1, type: 3}
   - {fileID: 2536320862874894052, guid: 5d89c097431d89f4fa79bfcb07cb2e13, type: 3}
   hatSpawnPoint: {fileID: 1328235906187484495}
+  head: {fileID: 2653206438562490574}
   gameManager: {fileID: 0}
 --- !u!136 &127008048918274110
 CapsuleCollider:
