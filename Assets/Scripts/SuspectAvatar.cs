@@ -24,6 +24,7 @@ public class SuspectAvatar : MonoBehaviour, Interactable
     public GameObject[] hats;
     public Transform hatSpawnPoint;
 
+    DialogueChoice dialogueChoice;
     DialogueBox dialogueBox;
     Player player;
     PlayerLook playerLook;
@@ -32,6 +33,7 @@ public class SuspectAvatar : MonoBehaviour, Interactable
     public GameManager gameManager;
 
     void Start() {
+        dialogueChoice = FindObjectOfType<DialogueChoice>();
         dialogueBox = FindObjectOfType<DialogueBox>();
         player = FindObjectOfType<Player>();
         playerLook = FindObjectOfType<PlayerLook>();
@@ -67,7 +69,23 @@ public class SuspectAvatar : MonoBehaviour, Interactable
         playerLook.control = false;
         playerInteract.control = false;
 
-        yield return dialogueBox.Display(gameManager.GetTestimony(suspect));
+        List<string> dialogueChoices = new List<string>();
+        dialogueChoices.Add("- Tell me everything you remember.");
+
+        foreach (Item item in Item.itemsFound) {
+            dialogueChoices.Add("- What do you know about this " + item.name + "?");
+        }
+
+        yield return dialogueChoice.GetChoice(dialogueChoices.ToArray());
+
+        if (dialogueChoice.chosenChoice == 0) {
+            yield return dialogueBox.Display(gameManager.GetTestimony(suspect));
+        }
+        else {
+            yield return dialogueBox.Display(new string[]{suspect.itemResponses[Item.itemsFound[dialogueChoice.chosenChoice-1]]});
+        }
+
+        
 
         player.control = true;
         playerLook.control = true;

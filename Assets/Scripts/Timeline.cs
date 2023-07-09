@@ -7,6 +7,7 @@ public struct Move {
     public Carriage destinationCarriage;
     public bool talksWithPassenger;
     public bool isNecroMove;
+    public bool necroCommited;
     public Suspect passengerTalkedTo;
 
     public string GetSummary() {
@@ -24,6 +25,7 @@ public struct Move {
 public class Timeline
 {
     public List<Move> moves;
+    public Mystery mystery;
 
     public Timeline() {
         moves = new List<Move>();
@@ -55,6 +57,18 @@ public class Timeline
         "After a minute or two, I came back.",
         "I then returned to my seat.",
         "I was only there for a moment before coming back."
+    };
+
+    string[] selfMoveVictimDeadTemplates = new string[]{
+        "Passing through the [necro_color] carriage, I noticed the victim was still very much undead, before contuing to the [dest_color] carriage.",
+        "I went through the [necro_color] carriage and saw the victim looking as skeletal as ever, then continued to the [dest_color] carriage.",
+        "The victim was still undead at this point, as I noticed when I was passing through the [necro_color] carriage while on my way to the [dest_color] carriage."
+    };
+
+    string[] selfMoveVictimAliveTemplates = new string[]{
+        "To my horror, I saw the victim alive and well in the [necro_color] carriage. Nevertheless I continued onwards to the [dest_color] carriage.",
+        "It was at this moment while passing through the [necro_color] carriage that I saw the victim full of life. Ignoring the frightening sight, I continued to the [dest_color] carriage.",
+        "The victim had already been resurrected at this point, as I noted while passing through the [necro_color] carriage before continuing to the [dest_color] carriage."
     };
 
     string[] otherLeaveTemplates = new string[]{
@@ -110,24 +124,52 @@ public class Timeline
         "After a moment, [move_pronoun_sub] came back through."
     };
 
+    string[] startingWords = new string[]{"First, ", "Firstly, ", "First thing that happened, ", "To begin with, "};
+    string[] nextWords = new string[]{"Next, ", "Then, ", "Next ", "And then ", "Then ", "Next thing that happened, ", "After that, ", "Next thing I remember, "};
 
 
     public string[] GenerateTestimony(Suspect witness) {
         List<string> statements = new List<string>();
 
+        Random.seed = witness.seed;
+
+        bool firstStatement = true;
+        string startingWord = "";
+
         foreach (Move move in moves) {
+            if (firstStatement) {
+                startingWord = startingWords[Random.Range(0, startingWords.Length)];
+            }
+            else {
+                startingWord = nextWords[Random.Range(0, nextWords.Length)];
+            }
+
             if (move.movingSuspect == witness) {
-                statements.Add(selfMoveTemplates[Random.Range(0, selfMoveTemplates.Length)].Replace("[dest_color]", Carriage.ColorAsString(move.destinationCarriage.color)));
+                statements.Add(startingWord + selfMoveTemplates[Random.Range(0, selfMoveTemplates.Length)].Replace("[dest_color]", Carriage.ColorAsString(move.destinationCarriage.color)));
+
+                if ((witness.carriage.index < mystery.necroCarriage.index) != (move.destinationCarriage.index < mystery.necroCarriage.index)) {
+                    if (move.necroCommited) {
+                        statements.Add(selfMoveVictimAliveTemplates[Random.Range(0, selfMoveVictimAliveTemplates.Length)].Replace("[necro_color]", Carriage.ColorAsString(mystery.necroCarriage.color)).Replace("[dest_color]", Carriage.ColorAsString(move.destinationCarriage.color)));
+                    }
+                    else {
+                        statements.Add(selfMoveVictimDeadTemplates[Random.Range(0, selfMoveVictimDeadTemplates.Length)].Replace("[necro_color]", Carriage.ColorAsString(mystery.necroCarriage.color)).Replace("[dest_color]", Carriage.ColorAsString(move.destinationCarriage.color)));
+                    }
+                }
 
                 if (move.talksWithPassenger) {
-                    statements.Add(selfMoveTalkTemplates[Random.Range(0, selfMoveTalkTemplates.Length)].Replace("[talk_suspect]", move.passengerTalkedTo.name));
+                    string statement = selfMoveTalkTemplates[Random.Range(0, selfMoveTalkTemplates.Length)].Replace("[talk_suspect]", witness.nicknames[move.passengerTalkedTo]);
+                    statement = char.ToUpper(statement[0]) + statement.Substring(1);
+                    statements.Add(statement);
                 }
                 else {
                     statements.Add(selfMoveNoTalkTemplates[Random.Range(0, selfMoveNoTalkTemplates.Length)]);
                 }
+
+                firstStatement = false;
             }
             else if (move.destinationCarriage == witness.carriage) {
-                statements.Add(otherEnterTemplates[Random.Range(0, otherEnterTemplates.Length)].Replace("[move_suspect]", move.movingSuspect.name).Replace("[direction]", (move.movingSuspect.carriage.index > witness.carriage.index ? "back" : "front")));
+                string statement = startingWord + otherEnterTemplates[Random.Range(0, otherEnterTemplates.Length)].Replace("[move_suspect]", witness.nicknames[move.movingSuspect]).Replace("[direction]", (move.movingSuspect.carriage.index > witness.carriage.index ? "back" : "front"));
+                statements.Add(statement);
 
                 string returnStatement = "";
 
@@ -136,7 +178,7 @@ public class Timeline
                         returnStatement = otherEnterTalkSelfTemplates[Random.Range(0, otherEnterTalkSelfTemplates.Length)].Replace("[move_pronoun_sub]", pronouns[(int)move.movingSuspect.gender, (int)Pronoun.Subject]).Replace("[move_pronoun_obj]", pronouns[(int)move.movingSuspect.gender, (int)Pronoun.Object]);
                     }
                     else {
-                        returnStatement = otherEnterTalkTemplates[Random.Range(0, otherEnterTalkTemplates.Length)].Replace("[move_pronoun_sub]", pronouns[(int)move.movingSuspect.gender, (int)Pronoun.Subject]).Replace("[move_pronoun_obj]", pronouns[(int)move.movingSuspect.gender, (int)Pronoun.Object]).Replace("[talk_suspect]", move.passengerTalkedTo.name);
+                        returnStatement = otherEnterTalkTemplates[Random.Range(0, otherEnterTalkTemplates.Length)].Replace("[move_pronoun_sub]", pronouns[(int)move.movingSuspect.gender, (int)Pronoun.Subject]).Replace("[move_pronoun_obj]", pronouns[(int)move.movingSuspect.gender, (int)Pronoun.Object]).Replace("[talk_suspect]", witness.nicknames[move.passengerTalkedTo]);
                     }
                 }
                 else {
@@ -145,22 +187,30 @@ public class Timeline
                 returnStatement = char.ToUpper(returnStatement[0]) + returnStatement.Substring(1);
                 
                 statements.Add(returnStatement);
+
+                firstStatement = false;
             }
             else if (move.movingSuspect.carriage == witness.carriage) {
-                statements.Add(otherLeaveTemplates[Random.Range(0, otherLeaveTemplates.Length)].Replace("[move_suspect]", move.movingSuspect.name).Replace("[direction]", (move.movingSuspect.carriage.index > move.destinationCarriage.index ? "front" : "back")));
+                string statement = startingWord + otherLeaveTemplates[Random.Range(0, otherLeaveTemplates.Length)].Replace("[move_suspect]", witness.nicknames[move.movingSuspect]).Replace("[direction]", (move.movingSuspect.carriage.index > move.destinationCarriage.index ? "front" : "back"));
+                statements.Add(statement);
 
                 string returnStatement = otherLeaveReturnTemplates[Random.Range(0, otherLeaveReturnTemplates.Length)].Replace("[move_pronoun_sub]", pronouns[(int)move.movingSuspect.gender, (int)Pronoun.Subject]).Replace("[move_pronoun_pos]", pronouns[(int)move.movingSuspect.gender, (int)Pronoun.Possessive]);
                 returnStatement = char.ToUpper(returnStatement[0]) + returnStatement.Substring(1);
 
                 statements.Add(returnStatement);
+
+                firstStatement = false;
             }
             else if ((move.movingSuspect.carriage.index > witness.carriage.index) != (move.destinationCarriage.index > witness.carriage.index)) {
-                statements.Add(otherPassThroughTemplates[Random.Range(0, otherPassThroughTemplates.Length)].Replace("[move_suspect]", move.movingSuspect.name).Replace("[direction]", (move.movingSuspect.carriage.index > witness.carriage.index ? "front" : "back")));
+                string statement = startingWord + otherPassThroughTemplates[Random.Range(0, otherPassThroughTemplates.Length)].Replace("[move_suspect]", witness.nicknames[move.movingSuspect]).Replace("[direction]", (move.movingSuspect.carriage.index > witness.carriage.index ? "front" : "back"));
+                statements.Add(statement);
 
                 string returnStatement = otherPassThroughReturnTemplates[Random.Range(0, otherPassThroughReturnTemplates.Length)].Replace("[move_pronoun_sub]", pronouns[(int)move.movingSuspect.gender, (int)Pronoun.Subject]).Replace("[move_pronoun_obj]", pronouns[(int)move.movingSuspect.gender, (int)Pronoun.Object]);
                 returnStatement = char.ToUpper(returnStatement[0]) + returnStatement.Substring(1);
                 
                 statements.Add(returnStatement);
+
+                firstStatement = false;
             }
         }
 
