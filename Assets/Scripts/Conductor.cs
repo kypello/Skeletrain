@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class Conductor : MonoBehaviour, Interactable
+public class Conductor : SkeletonCharacter, Interactable
 {
     public GameObject wall;
     public AudioSource boing;
@@ -13,9 +13,9 @@ public class Conductor : MonoBehaviour, Interactable
     public TMP_Text resultText;
     public Animation textAnim;
 
-    public Transform head;
-
-    public GameManager gameManager;
+    public Material closedMouthMat;
+    public Material openMouthMat;
+    public MeshRenderer skull;
 
     public SuspectAvatar ejectedSuspect;
 
@@ -33,12 +33,12 @@ public class Conductor : MonoBehaviour, Interactable
         }
         names[6] = "- I'm not sure.";
 
-        yield return dialogueBox.Display(new string[]{"Do you know who the necromancer is?"});
+        yield return dialogueBox.Display(new string[]{"Do you know who the necromancer is?"}, closedMouthMat, openMouthMat, skull, pitch);
 
         yield return dialogueChoice.GetChoice(names);
 
         if (dialogueChoice.chosenChoice == 6) {
-            yield return dialogueBox.Display(new string[]{"Let me know when you've figured it out."});
+            yield return dialogueBox.Display(new string[]{"Let me know when you've figured it out."}, closedMouthMat, openMouthMat, skull, pitch);
 
             gameManager.player.fullControl = true;
         }
@@ -64,7 +64,7 @@ public class Conductor : MonoBehaviour, Interactable
 
             music.Stop();
 
-            yield return dialogueBox.Display(new string[]{kickOff});
+            yield return dialogueBox.Display(new string[]{kickOff}, closedMouthMat, openMouthMat, skull, pitch);
 
             dramatic.Play();
 

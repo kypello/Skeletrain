@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SuspectAvatar : MonoBehaviour, Interactable
+public class SuspectAvatar : SkeletonCharacter, Interactable
 {
     public Suspect suspect;
 
@@ -18,15 +18,18 @@ public class SuspectAvatar : MonoBehaviour, Interactable
     public MeshRenderer rightLeg;
     public MeshRenderer dress;
 
-    public Material[] skullMaterials;
+    [System.Serializable]
+    public struct SkullMaterialPair {
+        public Material closedMouthMat;
+        public Material openMouthMat;
+    }
+
+    public SkullMaterialPair[] skullMaterialPairs;
+    SkullMaterialPair skullMaterials;
     public MeshRenderer skull;
 
     public GameObject[] hats;
     public Transform hatSpawnPoint;
-
-    public Transform head;
-
-    public GameManager gameManager;
 
     public void SetUpAppearance() {
         if (suspect.gender == Suspect.Gender.Female) {
@@ -47,10 +50,18 @@ public class SuspectAvatar : MonoBehaviour, Interactable
 
         Random.seed = suspect.seed;
 
-        skull.sharedMaterial = skullMaterials[Random.Range(0, skullMaterials.Length)];
+        skullMaterials = skullMaterialPairs[Random.Range(0, skullMaterialPairs.Length)];
+        skull.sharedMaterial = skullMaterials.closedMouthMat;
 
         if (Random.Range(0, 3) != 0) {
             Instantiate(hats[Random.Range(0, hats.Length)], hatSpawnPoint);
+        }
+
+        if (suspect.gender == Suspect.Gender.Female) {
+            pitch = Random.Range(0.8f, 2.5f);
+        }
+        else {
+            pitch = Random.Range(0.5f, 1.4f);
         }
     }
 
@@ -69,16 +80,16 @@ public class SuspectAvatar : MonoBehaviour, Interactable
         yield return gameManager.dialogueChoice.GetChoice(dialogueChoices.ToArray());
 
         if (gameManager.dialogueChoice.chosenChoice == 0) {
-            yield return gameManager.dialogueBox.Display(gameManager.GetTestimony(suspect));
+            yield return gameManager.dialogueBox.Display(gameManager.GetTestimony(suspect), skullMaterials.closedMouthMat, skullMaterials.openMouthMat, skull, pitch);
         }
         else {
-            yield return gameManager.dialogueBox.Display(new string[]{suspect.itemResponses[Item.itemsFound[gameManager.dialogueChoice.chosenChoice-1]]});
+            yield return gameManager.dialogueBox.Display(new string[]{suspect.itemResponses[Item.itemsFound[gameManager.dialogueChoice.chosenChoice-1]]}, skullMaterials.closedMouthMat, skullMaterials.openMouthMat, skull, pitch);
         }
 
         
 
         gameManager.player.fullControl = true;
-    }   
+    }
 
     public string InteractCommand {
         get {

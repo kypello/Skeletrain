@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public class GameManager : MonoBehaviour
     public Material[] carriageColors;
     public MeshRenderer[] carriageRends;
     public Transform[] carriageTransforms;
-    public SuspectAvatar suspectPrefab;
+    public SuspectAvatar[] suspectPrefabs;
     public WorldItem worldItemPrefab;
 
     public Transform livingPerson;
@@ -25,6 +26,26 @@ public class GameManager : MonoBehaviour
         public Material itemMaterial;
     }
     public ItemTemplate[] itemTemplates;
+
+    public RenderTexture cameraRender;
+    public Camera playerCam;
+    public Camera drawCam;
+    public RawImage renderImage;
+
+    bool pixelRender = true;
+    public bool PixelRender {
+        get {
+            return pixelRender;
+        }
+        set {
+            if (value) {
+                EnablePixelRender();
+            }
+            else {
+                DisablePixelRender();
+            }
+        }
+    }
 
     void Start() {
         instance = this;
@@ -69,6 +90,18 @@ public class GameManager : MonoBehaviour
         */
     }
 
+    void Update() {
+        if (Input.GetKeyDown(KeyCode.R)) {
+            PixelRender = !PixelRender;
+        }
+
+        
+
+        if (Input.GetKeyDown(KeyCode.Q)) {
+            Application.Quit();
+        }
+    }
+
     void SpawnSuspects() {
         List<Transform> usedSpawnPoints = new List<Transform>();
 
@@ -82,7 +115,7 @@ public class GameManager : MonoBehaviour
                     spawnPoint = carriageTransforms[i].GetChild(Random.Range(0, carriageTransforms[i].childCount));
                 } while (usedSpawnPoints.Contains(spawnPoint));
 
-                SuspectAvatar newSuspect = Instantiate(suspectPrefab, spawnPoint.position + new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)), Quaternion.Euler(spawnPoint.localEulerAngles + Vector3.up * Random.Range(-15f, 15f)));
+                SuspectAvatar newSuspect = Instantiate(suspectPrefabs[Random.Range(0, suspectPrefabs.Length)], spawnPoint.position + new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f)), Quaternion.Euler(spawnPoint.localEulerAngles + Vector3.up * Random.Range(-15f, 15f)));
                 usedSpawnPoints.Add(spawnPoint);
                 newSuspect.suspect = mystery.carriages[i].passengers[j];
                 newSuspect.gameManager = this;
@@ -119,5 +152,19 @@ public class GameManager : MonoBehaviour
 
     public Suspect GetSuspect(int suspectIndex) {
         return mystery.suspects[suspectIndex];
+    }
+
+    void EnablePixelRender() {
+        playerCam.targetTexture = cameraRender;
+        drawCam.enabled = true;
+        renderImage.enabled = true;
+        pixelRender = true;
+    }
+
+    void DisablePixelRender() {
+        playerCam.targetTexture = null;
+        drawCam.enabled = false;
+        renderImage.enabled = false;
+        pixelRender = false;
     }
 }

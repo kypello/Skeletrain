@@ -35,17 +35,46 @@ public class EndlessTerrain : MonoBehaviour
             chunks[i].mesh = GenerateMesh(30, 10, offsetX, i * 9f + offsetZ);
             chunkColliders[i] = chunks[i].GetComponent<MeshCollider>();
             chunkColliders[i].sharedMesh = chunks[i].mesh;
-
             
+            ShuffleTrees(chunks[i].transform);
         }
         currentChunkZ = 9f * chunkCount;
 
         //meshFilter.mesh = GenerateMesh(15, 10, 0, 0);
     }
 
+    void ShuffleTrees(Transform chunk) {
+        for (int j = 0; j < chunk.childCount; j++) {
+            Transform tree = chunk.GetChild(j);
+            
+            if (tree.gameObject.layer != 8) {
+                continue;
+            }
+
+            RaycastHit hit;
+            Vector3 spawn;
+            do {
+                do {
+                    spawn = new Vector3(Random.Range(-150f, 150f), 50f, chunk.position.z + Random.Range(0f, 9f * meshScale));
+                } while (Mathf.Abs(spawn.x) < 15f);
+            } while (!Physics.Raycast(spawn, Vector3.down, out hit, 100f, 1<<7, QueryTriggerInteraction.Ignore));
+            
+            tree.position = hit.point;
+
+            if (spawn.x < 0) {
+                tree.rotation = Quaternion.LookRotation(Vector3.right);
+            }
+            else {
+                tree.rotation = Quaternion.LookRotation(Vector3.left);
+            }
+
+            tree.transform.localScale = Vector3.one * Random.Range(1.5f, 3f);
+        }
+    }
+
     void Update() {
         chunks[0].transform.Translate(-Vector3.forward * trainSpeed * Time.deltaTime);
-        
+
         /*
         bumpTime += Time.deltaTime;
         float bumpHeight = Mathf.PerlinNoise(bumpTime / bumpScale, 0f);
@@ -68,6 +97,7 @@ public class EndlessTerrain : MonoBehaviour
             movingChunk.mesh = GenerateMesh(30, 10, offsetX, currentChunkZ + offsetZ);
             movingChunk.GetComponent<MeshCollider>().sharedMesh = movingChunk.mesh;
             currentChunkZ += 9f;
+            ShuffleTrees(movingChunk.transform);
         }
     }
 
