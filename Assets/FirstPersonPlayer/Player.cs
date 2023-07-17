@@ -39,6 +39,17 @@ public class Player : MonoBehaviour
 
     public bool control = true;
 
+    public PlayerLook playerLook;
+    public PlayerInteract playerInteract;
+
+    public bool fullControl {
+        set {
+            control = value;
+            playerLook.control = value;
+            playerInteract.control = value;
+        }
+    }
+
     CharacterController controller;
 
     Animation headBobAnim;

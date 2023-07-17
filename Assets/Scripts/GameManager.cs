@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public Mystery mystery;
+    public static GameManager instance;
+
+    Mystery mystery;
     public Material[] carriageColors;
     public MeshRenderer[] carriageRends;
     public Transform[] carriageTransforms;
@@ -13,7 +15,9 @@ public class GameManager : MonoBehaviour
 
     public Transform livingPerson;
     public ConductorIntro conductorIntro;
-    public Transform player;
+    public Player player;
+    public DialogueBox dialogueBox;
+    public DialogueChoice dialogueChoice;
 
     [System.Serializable]
     public struct ItemTemplate {
@@ -23,6 +27,8 @@ public class GameManager : MonoBehaviour
     public ItemTemplate[] itemTemplates;
 
     void Start() {
+        instance = this;
+
         mystery = new Mystery();
 
         mystery.GenerateMystery();
@@ -35,8 +41,8 @@ public class GameManager : MonoBehaviour
 
         Transform spawnPoint = carriageTransforms[mystery.necroCarriage.index].GetChild(Random.Range(0, carriageTransforms[mystery.necroCarriage.index].childCount));
         
-        player.position = carriageTransforms[mystery.necroCarriage.index].position + Vector3.up * 2f;
-        player.rotation = Quaternion.LookRotation(spawnPoint.position - carriageTransforms[mystery.necroCarriage.index].position);
+        player.transform.position = carriageTransforms[mystery.necroCarriage.index].position + Vector3.up * 2f;
+        player.transform.rotation = Quaternion.LookRotation(spawnPoint.position - carriageTransforms[mystery.necroCarriage.index].position);
 
         livingPerson.position = spawnPoint.position;
         livingPerson.rotation = Quaternion.LookRotation(carriageTransforms[mystery.necroCarriage.index].position - spawnPoint.position);
@@ -80,7 +86,7 @@ public class GameManager : MonoBehaviour
                 usedSpawnPoints.Add(spawnPoint);
                 newSuspect.suspect = mystery.carriages[i].passengers[j];
                 newSuspect.gameManager = this;
-                newSuspect.SetUpAppearance(true);
+                newSuspect.SetUpAppearance();
             }
         }
     }
@@ -109,5 +115,9 @@ public class GameManager : MonoBehaviour
             return mystery.falseTimeline.GenerateTestimony(suspect);
         }
         return mystery.trueTimeline.GenerateTestimony(suspect);
+    }
+
+    public Suspect GetSuspect(int suspectIndex) {
+        return mystery.suspects[suspectIndex];
     }
 }

@@ -230,6 +230,7 @@ MonoBehaviour:
   player: {fileID: 252580079361921654}
   sensitivity: 500
   control: 1
+  sensitivityText: {fileID: 0}
 --- !u!114 &252580077502164737
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -250,6 +251,7 @@ MonoBehaviour:
   interactLayer:
     serializedVersion: 2
     m_Bits: 0
+  interactText: {fileID: 0}
 --- !u!111 &252580077502164738
 Animation:
   m_ObjectHideFlags: 0
@@ -1219,6 +1221,8 @@ MonoBehaviour:
     footstepSoundContainer: {fileID: 252580078213383444}
   moveForce: 10
   control: 1
+  playerLook: {fileID: 252580077502164736}
+  playerInteract: {fileID: 252580077502164737}
 --- !u!33 &252580079361920393
 MeshFilter:
   m_ObjectHideFlags: 0

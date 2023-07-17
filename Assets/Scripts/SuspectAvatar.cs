@@ -24,25 +24,11 @@ public class SuspectAvatar : MonoBehaviour, Interactable
     public GameObject[] hats;
     public Transform hatSpawnPoint;
 
-    DialogueChoice dialogueChoice;
-    DialogueBox dialogueBox;
-    Player player;
-    PlayerLook playerLook;
-    PlayerInteract playerInteract;
-
     public Transform head;
 
     public GameManager gameManager;
 
-    void Start() {
-        dialogueChoice = FindObjectOfType<DialogueChoice>();
-        dialogueBox = FindObjectOfType<DialogueBox>();
-        player = FindObjectOfType<Player>();
-        playerLook = FindObjectOfType<PlayerLook>();
-        playerInteract = FindObjectOfType<PlayerInteract>();
-    }
-
-    public void SetUpAppearance(bool hat) {
+    public void SetUpAppearance() {
         if (suspect.gender == Suspect.Gender.Female) {
             dress.enabled = true;
             leftLeg.enabled = false;
@@ -59,19 +45,19 @@ public class SuspectAvatar : MonoBehaviour, Interactable
             leftLeg.sharedMaterial = outfits[(int)suspect.bottomColor].suit;
         }
 
+        Random.seed = suspect.seed;
+
         skull.sharedMaterial = skullMaterials[Random.Range(0, skullMaterials.Length)];
 
-        if (hat && Random.Range(0, 3) != 0) {
+        if (Random.Range(0, 3) != 0) {
             Instantiate(hats[Random.Range(0, hats.Length)], hatSpawnPoint);
         }
     }
 
     public IEnumerator Interact() {
-        player.control = false;
-        playerLook.control = false;
-        playerInteract.control = false;
+        gameManager.player.fullControl = false;
 
-        yield return playerLook.LookAt(head.position);
+        yield return gameManager.player.playerLook.LookAt(head.position);
 
         List<string> dialogueChoices = new List<string>();
         dialogueChoices.Add("- Tell me everything you remember.");
@@ -80,20 +66,18 @@ public class SuspectAvatar : MonoBehaviour, Interactable
             dialogueChoices.Add("- What do you know about this " + item.name + "?");
         }
 
-        yield return dialogueChoice.GetChoice(dialogueChoices.ToArray());
+        yield return gameManager.dialogueChoice.GetChoice(dialogueChoices.ToArray());
 
-        if (dialogueChoice.chosenChoice == 0) {
-            yield return dialogueBox.Display(gameManager.GetTestimony(suspect));
+        if (gameManager.dialogueChoice.chosenChoice == 0) {
+            yield return gameManager.dialogueBox.Display(gameManager.GetTestimony(suspect));
         }
         else {
-            yield return dialogueBox.Display(new string[]{suspect.itemResponses[Item.itemsFound[dialogueChoice.chosenChoice-1]]});
+            yield return gameManager.dialogueBox.Display(new string[]{suspect.itemResponses[Item.itemsFound[gameManager.dialogueChoice.chosenChoice-1]]});
         }
 
         
 
-        player.control = true;
-        playerLook.control = true;
-        playerInteract.control = true;
+        gameManager.player.fullControl = true;
     }   
 
     public string InteractCommand {

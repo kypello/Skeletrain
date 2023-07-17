@@ -18,12 +18,21 @@ public class EndlessTerrain : MonoBehaviour
 
     float currentChunkZ = 0f;
 
+    float offsetX;
+    float offsetZ;
+
+    float bumpTime = 0f;
+    float bumpScale = 0.1f;
+
     void Start() {
+        offsetX = Random.Range(-10000000f, 10000000f);
+        offsetZ = Random.Range(-10000000f, 10000000f);
+
         chunks = new MeshFilter[6];
         chunkColliders = new MeshCollider[6];
         for (int i = 0; i < chunkCount; i++) {
             chunks[i] = Instantiate(chunkPrefab, new Vector3(-15f * meshScale, -3f, -300f + i * 9f * meshScale), Quaternion.identity);
-            chunks[i].mesh = GenerateMesh(30, 10, 0, i * 9f);
+            chunks[i].mesh = GenerateMesh(30, 10, offsetX, i * 9f + offsetZ);
             chunkColliders[i] = chunks[i].GetComponent<MeshCollider>();
             chunkColliders[i].sharedMesh = chunks[i].mesh;
 
@@ -36,6 +45,15 @@ public class EndlessTerrain : MonoBehaviour
 
     void Update() {
         chunks[0].transform.Translate(-Vector3.forward * trainSpeed * Time.deltaTime);
+        
+        /*
+        bumpTime += Time.deltaTime;
+        float bumpHeight = Mathf.PerlinNoise(bumpTime / bumpScale, 0f);
+
+        
+        chunks[0].transform.position = new Vector3(chunks[0].transform.position.x, -3f + bumpHeight, chunks[0].transform.position.z);
+        */
+
         for (int i = 1; i < chunkCount; i++) {
             chunks[i].transform.position = chunks[i-1].transform.position + Vector3.forward * 9f * meshScale;
         }
@@ -47,7 +65,7 @@ public class EndlessTerrain : MonoBehaviour
             }
             chunks[chunkCount-1] = movingChunk;
             movingChunk.transform.position = chunks[chunkCount - 2].transform.position + Vector3.forward * 9f * meshScale;
-            movingChunk.mesh = GenerateMesh(30, 10, 0, currentChunkZ);
+            movingChunk.mesh = GenerateMesh(30, 10, offsetX, currentChunkZ + offsetZ);
             movingChunk.GetComponent<MeshCollider>().sharedMesh = movingChunk.mesh;
             currentChunkZ += 9f;
         }

@@ -5,11 +5,6 @@ using TMPro;
 
 public class Conductor : MonoBehaviour, Interactable
 {
-    DialogueChoice dialogueChoice;
-    DialogueBox dialogueBox;
-    Player player;
-    PlayerLook playerLook;
-    PlayerInteract playerInteract;
     public GameObject wall;
     public AudioSource boing;
     public AudioSource music;
@@ -24,24 +19,17 @@ public class Conductor : MonoBehaviour, Interactable
 
     public SuspectAvatar ejectedSuspect;
 
-    void Start() {
-        dialogueChoice = FindObjectOfType<DialogueChoice>();
-        dialogueBox = FindObjectOfType<DialogueBox>();
-        player = FindObjectOfType<Player>();
-        playerLook = FindObjectOfType<PlayerLook>();
-        playerInteract = FindObjectOfType<PlayerInteract>();
-    }
-
     public IEnumerator Interact() {
-        player.control = false;
-        playerLook.control = false;
-        playerInteract.control = false;
+        gameManager.player.fullControl = false;
 
-        yield return playerLook.LookAt(head.position);
+        DialogueBox dialogueBox = gameManager.dialogueBox;
+        DialogueChoice dialogueChoice = gameManager.dialogueChoice;
+
+        yield return gameManager.player.playerLook.LookAt(head.position);
 
         string[] names = new string[7];
         for (int i = 0; i < 6; i++) {
-            names[i] = "- " + gameManager.mystery.suspects[i].name;
+            names[i] = "- " + gameManager.GetSuspect(i).name;
         }
         names[6] = "- I'm not sure.";
 
@@ -52,12 +40,10 @@ public class Conductor : MonoBehaviour, Interactable
         if (dialogueChoice.chosenChoice == 6) {
             yield return dialogueBox.Display(new string[]{"Let me know when you've figured it out."});
 
-            player.control = true;
-            playerLook.control = true;
-            playerInteract.control = true;
+            gameManager.player.fullControl = true;
         }
         else {
-            Suspect chosenSuspect = gameManager.mystery.suspects[dialogueChoice.chosenChoice];
+            Suspect chosenSuspect = gameManager.GetSuspect(dialogueChoice.chosenChoice);
 
             foreach (SuspectAvatar suspect in FindObjectsOfType<SuspectAvatar>()) {
                 if (suspect.suspect == chosenSuspect) {
@@ -68,7 +54,7 @@ public class Conductor : MonoBehaviour, Interactable
 
             ejectedSuspect.gameObject.SetActive(true);
             ejectedSuspect.suspect = chosenSuspect;
-            ejectedSuspect.SetUpAppearance(false);
+            ejectedSuspect.SetUpAppearance();
             wall.SetActive(false);
 
             
@@ -82,7 +68,7 @@ public class Conductor : MonoBehaviour, Interactable
 
             dramatic.Play();
 
-            yield return playerLook.LookAt(ejectedSuspect.transform.position + Vector3.up * 3f + Vector3.right * 2f);
+            yield return gameManager.player.playerLook.LookAt(ejectedSuspect.transform.position + Vector3.up * 3f + Vector3.right * 2f);
 
             yield return new WaitForSeconds(1.5f);
             boing.Play();
